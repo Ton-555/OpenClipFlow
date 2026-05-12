@@ -1,16 +1,12 @@
-from inclusionAI import callInclusionAI 
-from minmax import callMinMaxAI
-from qwen import callQwenAI
-from modelLocal import callLocalAI
-import json
 import sys
-
-modelLocal = "gemma4:e4b"
+from core.pipeline import gen_script_json
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding='utf-8')
 
-dataRawInput = """
+MODEL_LOCAL_NAME = "gemma4:e4b"
+
+DATA_RAW_INPUT = """
 1. สถานการณ์การเมืองและสงคราม (Politics & War)
 ความหมาย: สถานะความมั่นคงและนโยบายต่างประเทศที่มีผลต่อความเชื่อมั่นของนักลงทุน
 
@@ -19,7 +15,7 @@ dataRawInput = """
 เศรษฐกิจมหภาค: อัตราว่างงานทรงตัวอยู่ที่ประมาณ 4.3% โดยเศรษฐกิจในไตรมาสแรกของปี 2026 ยังคงขยายตัวจากการลงทุนในภาคอุปกรณ์และทรัพย์สินทางปัญญา แม้จะมีแรงกดดันจากราคาพลังงานที่สูงขึ้นก็ตาม
 """
 
-configPromt =""" [คำสั่ง: ช่วยแปลงข้อมูลที่ได้รับก่อนหน้านี้ให้เป็น JSON ที่มีโครงสร้างแบบนี้และผลลัพธ์ที่ได้คือ JSON เท่านั้น ห้ามมีข้อความอื่นพร้อม copy ได้.json และห้ามใช้ EMOJI ใดๆ ใน JSON ! และข้อความหลังจากนี้คือตัวอย่าางโครงสร้างไฟล์ JSON]
+CONFIG_PROMPT = """ [คำสั่ง: ช่วยแปลงข้อมูลที่ได้รับก่อนหน้านี้ให้เป็น JSON ที่มีโครงสร้างแบบนี้และผลลัพธ์ที่ได้คือ JSON เท่านั้น ห้ามมีข้อความอื่นพร้อม copy ได้.json และห้ามใช้ EMOJI ใดๆ ใน JSON ! และข้อความหลังจากนี้คือตัวอย่าางโครงสร้างไฟล์ JSON]
 {
   "title": "สรุปสถานการณ์ Geopolitical Resiliency 2026",
   "scenes": [
@@ -37,7 +33,6 @@ configPromt =""" [คำสั่ง: ช่วยแปลงข้อมูล
       "duration": null,
       "subtitle": "ข้อตกลงหยุดยิงสหรัฐฯ-อิหร่าน และการเปิดช่องแคบฮอร์มุซ"
     },
-
     {
       "id": 3,
       "voiceover": "ด้านการเมืองภายใน รัฐบาลภายใต้ประธานาธิบดีทรัมป์กำลังเผชิญกับการเลือกตั้งกลางเทอมในเดือนพฤศจิกายนนี้ ส่งผลให้โยบายการค้ามีความผันผวน",
@@ -63,51 +58,19 @@ configPromt =""" [คำสั่ง: ช่วยแปลงข้อมูล
 }
 """
 
-
-print("selec model")
-print("1. inclusion ai")
-print("2. minmax")
-print("3. qwen")
-print("4. gemma4")
-model = input("Enter your model: ")
-if(model == "1"):
-    jsonString = callInclusionAI(dataRawInput + configPromt)
-    print(jsonString)
-elif(model == "2"):
-    jsonString = callMinMaxAI(dataRawInput + configPromt)
-    print(jsonString)
-elif(model == "3"):
-    jsonString = callQwenAI(dataRawInput + configPromt)
-    print(jsonString)
-elif(model == "4"):
-    jsonString = callLocalAI(dataRawInput + configPromt, modelLocal)
-    print(jsonString)
-else:
-    print("[ERROR] Model not found!")
-
-print("suceesful!!")
-
-
-if 'jsonString' in locals():
-
-    cleaned_json = jsonString.strip()
-    if cleaned_json.startswith("```json"):
-        cleaned_json = cleaned_json[7:]
-    elif cleaned_json.startswith("```"):
-        cleaned_json = cleaned_json[3:]
+def main():
+    print("=== OpenClipFlow AI Generator ===")
+    print("select model:")
+    print("1. inclusion ai")
+    print("2. minmax")
+    print("3. qwen")
+    print("4. gemma4")
     
-    if cleaned_json.endswith("```"):
-        cleaned_json = cleaned_json[:-3]
+    choice = input("Enter your model: ")
     
-    cleaned_json = cleaned_json.strip()
+    gen_script_json(DATA_RAW_INPUT, CONFIG_PROMPT, choice, MODEL_LOCAL_NAME)
+    
+    print("\nsuceesful!!")
 
-    try:      
-        json_data = json.loads(cleaned_json)
-        with open("script.json", "w", encoding="utf-8") as f:
-            json.dump(json_data, f, ensure_ascii=False, indent=2)
-        print("บันทึกไฟล์ script.json สำเร็จ!")
-    except Exception as e:
-        with open("script.json", "w", encoding="utf-8") as f:
-            f.write(cleaned_json)
-        print(f"คำเตือน: บันทึกเป็น Text ปกติ (เนื่องจากข้อมูลไม่ใช่ JSON ที่ถูกต้อง: {e})")
-
+if __name__ == "__main__":
+    main()
