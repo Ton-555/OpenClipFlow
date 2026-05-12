@@ -1,31 +1,25 @@
 from inclusionAI import callInclusionAI 
 from minmax import callMinMaxAI
 from qwen import callQwenAI
+from modelLocal import callLocalAI
 import json
 import sys
 
-# Force UTF-8 for main.py
+modelLocal = "gemma4:e4b"
+
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding='utf-8')
 
 dataRawInput = """
-หัวข้อ: การทำงานร่วมกันระหว่างมนุษย์และเอไอเอเจนท์ (Human-AI Agent Collaboration)
+1. สถานการณ์การเมืองและสงคราม (Politics & War)
+ความหมาย: สถานะความมั่นคงและนโยบายต่างประเทศที่มีผลต่อความเชื่อมั่นของนักลงทุน
 
-หัวข้อนี้ไม่ใช่แค่การพิมพ์แชทกับ AI ทั่วไป แต่เป็นการเรียนรู้วิธี "กำกับดูแล" และ "ร่วมงาน" กับ AI Agents ที่สามารถทำงานแทนเราได้โดยอัตโนมัติ (Autonomous Agents) ซึ่งเป็นทักษะที่สำคัญมากในปัจจุบัน
-
-ขั้นตอนการเรียนรู้แบบเร่งรัด
-
-ทำความรู้จัก AI Agents: ทำความเข้าใจความต่างระหว่าง AI ทั่วไป (Chatbot) กับ AI Agent (ระบบที่สามารถวางแผน ตัดสินใจ และใช้เครื่องมืออื่นๆ แทนเราได้)
-
-การออกแบบ Agentic Workflow: ศึกษากระบวนการคิดของเอไอ เช่น การทำ Chain-of-Thought (การคิดเป็นลำดับขั้นตอน) และการตรวจสอบความถูกต้องด้วยตัวเอง (Self-reflection)
-
-เครื่องมือที่ใช้: ลองสำรวจ Framework ยอดนิยม เช่น LangChain หรือ CrewAI ซึ่งใช้ในการสร้างทีมเอไอมาช่วยทำงานเฉพาะทาง
-
-ความปลอดภัยและจริยธรรม (Agentic Security): เรียนรู้วิธีป้องกันไม่ให้เอไอทำงานผิดพลาดหรือถูกโจมตีผ่านคำสั่ง (Prompt Injection) ขณะที่มันกำลังทำงานอัตโนมัติ
-
+วิกฤตการณ์สหรัฐฯ-อิหร่าน: สถานการณ์ตึงเครียดขึ้นอย่างมากหลังจากกองทัพสหรัฐฯ ยิงถล่มเรือบรรทุกน้ำมันติดธงอิหร่านในอ่าวเปอร์เซีย เนื่องจากพยายามฝ่าฝืนการปิดล้อมทางทะเล ปธน. โดนัลด์ ทรัมป์ (สมัยที่ 2) ได้ยื่นคำขาด (Ultimatum) ให้เตหะรานยอมรับข้อตกลงยุติสงคราม มิฉะนั้นจะเผชิญกับการทิ้งระเบิดครั้งใหญ่
+การเมืองในประเทศ: รัฐบาลกำลังเผชิญกับการตรวจสอบเรื่องความสัมพันธ์ในอดีตของเจ้าหน้าที่ระดับสูงกับ Jeffrey Epstein ขณะที่นโยบายการตรวจคนเข้าเมืองที่เข้มงวดเริ่มส่งผลต่อภาพลักษณ์ "ความยินดีต้อนรับ" ของสหรัฐฯ ในสายตาชาวโลก
+เศรษฐกิจมหภาค: อัตราว่างงานทรงตัวอยู่ที่ประมาณ 4.3% โดยเศรษฐกิจในไตรมาสแรกของปี 2026 ยังคงขยายตัวจากการลงทุนในภาคอุปกรณ์และทรัพย์สินทางปัญญา แม้จะมีแรงกดดันจากราคาพลังงานที่สูงขึ้นก็ตาม
 """
 
-configPromt =""" [คำสั่ง: ช่วยแปลงข้อมูลที่ได้รับก่อนหน้านี้ให้เป็น JSON ที่มีโครงสร้างแบบนี้และผลลัพธ์ที่ได้คือ JSON เท่านั้น ห้ามมีข้อความอื่นพร้อม copy ได้.json และห้ามใช้ EMOJI ใดๆ ใน JSON !]
+configPromt =""" [คำสั่ง: ช่วยแปลงข้อมูลที่ได้รับก่อนหน้านี้ให้เป็น JSON ที่มีโครงสร้างแบบนี้และผลลัพธ์ที่ได้คือ JSON เท่านั้น ห้ามมีข้อความอื่นพร้อม copy ได้.json และห้ามใช้ EMOJI ใดๆ ใน JSON ! และข้อความหลังจากนี้คือตัวอย่าางโครงสร้างไฟล์ JSON]
 {
   "title": "สรุปสถานการณ์ Geopolitical Resiliency 2026",
   "scenes": [
@@ -74,6 +68,7 @@ print("selec model")
 print("1. inclusion ai")
 print("2. minmax")
 print("3. qwen")
+print("4. gemma4")
 model = input("Enter your model: ")
 if(model == "1"):
     jsonString = callInclusionAI(dataRawInput + configPromt)
@@ -83,6 +78,9 @@ elif(model == "2"):
     print(jsonString)
 elif(model == "3"):
     jsonString = callQwenAI(dataRawInput + configPromt)
+    print(jsonString)
+elif(model == "4"):
+    jsonString = callLocalAI(dataRawInput + configPromt, modelLocal)
     print(jsonString)
 else:
     print("[ERROR] Model not found!")
